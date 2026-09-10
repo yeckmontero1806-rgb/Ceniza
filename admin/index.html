@@ -3,479 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Ceniza — Control de Horas</title>
+<title>Admin Ceniza</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --black-0:#070605;
-    --black-1:#100d0b;
-    --black-2:#1a1512;
-    --ash:#332922;
-    --ember:#b5622f;
-    --ember-dim:#8a4c28;
-    --cream:#eae1d4;
-    --cream-dim:#b9ada0;
-    --line: rgba(234,225,212,0.1);
-  }
-
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
-
-  body{
-    background: linear-gradient(180deg, var(--black-0) 0%, var(--black-1) 40%, var(--black-0) 100%);
-    color:var(--cream);
-    font-family:'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight:300;
-    overflow-x:hidden;
-    min-height:100vh;
-  }
-
-  .container{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    min-height:100vh;
-    padding:20px;
-  }
-
-  .auth-box{
-    background: linear-gradient(135deg, rgba(51,41,34,0.8), rgba(26,21,18,0.9));
-    border:1px solid var(--line);
-    border-radius:4px;
-    padding:60px 40px;
-    max-width:420px;
-    width:100%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-
-  .auth-box h1{
-    font-family:'Fraunces', serif;
-    font-size:32px;
-    margin-bottom:10px;
-    color:var(--cream);
-  }
-
-  .auth-box .subtitle{
-    font-size:13px;
-    color:var(--cream-dim);
-    margin-bottom:40px;
-    letter-spacing:0.08em;
-  }
-
-  .field{
-    margin-bottom:20px;
-  }
-
-  .field label{
-    display:block;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.16em;
-    color:var(--ember);
-    margin-bottom:8px;
-    font-weight:500;
-  }
-
-  .field input{
-    width:100%;
-    background:rgba(7,6,5,0.5);
-    border:1px solid rgba(181,98,47,0.3);
-    border-radius:2px;
-    padding:12px 14px;
-    font-family:inherit;
-    font-size:14px;
-    color:var(--cream);
-    transition:all .3s ease;
-  }
-
-  .field input:focus{
-    outline:none;
-    border-color:var(--ember);
-    background:rgba(7,6,5,0.7);
-    box-shadow:0 0 0 2px rgba(181,98,47,0.2);
-  }
-
-  .password-wrapper{
-    position:relative;
-  }
-
-  .password-wrapper input{
-    padding-right:45px;
-  }
-
-  .toggle-password{
-    position:absolute;
-    right:12px;
-    top:50%;
-    transform:translateY(-50%);
-    background:none;
-    border:none;
-    color:var(--ember);
-    cursor:pointer;
-    font-size:18px;
-    padding:5px;
-    transition:all .3s ease;
-  }
-
-  .toggle-password:hover{
-    color:var(--cream);
-  }
-
-  .btn{
-    width:100%;
-    padding:12px;
-    background:linear-gradient(180deg, var(--ember) 0%, var(--ember-dim) 100%);
-    border:1px solid var(--ember);
-    color:#120c08;
-    font-weight:500;
-    border-radius:2px;
-    cursor:pointer;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:0.14em;
-    transition:all .3s ease;
-    margin-top:10px;
-  }
-
-  .btn:hover{
-    background:linear-gradient(180deg, #c47542 0%, var(--ember) 100%);
-    box-shadow:0 8px 30px -6px rgba(181,98,47,0.5);
-  }
-
-  .btn:disabled{
-    opacity:0.6;
-    cursor:not-allowed;
-  }
-
-  .message{
-    padding:12px;
-    border-radius:2px;
-    margin-bottom:20px;
-    font-size:12px;
-    display:none;
-  }
-
-  .message.show{
-    display:block;
-  }
-
-  .message.error{
-    background:rgba(255,107,107,0.2);
-    border:1px solid #ff6b6b;
-    color:#ff9999;
-  }
-
-  .message.success{
-    background:rgba(107,255,107,0.2);
-    border:1px solid #6bff6b;
-    color:#99ff99;
-  }
-
-  .toggle-form{
-    text-align:center;
-    margin-top:20px;
-    padding-top:20px;
-    border-top:1px solid var(--line);
-  }
-
-  .toggle-form button{
-    background:none;
-    border:none;
-    color:var(--ember);
-    cursor:pointer;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:0.1em;
-    transition:all .3s ease;
-  }
-
-  .toggle-form button:hover{
-    color:var(--cream);
-  }
-
-  .admin-container{
-    display:none;
-    width:100%;
-    max-width:1200px;
-    margin:0 auto;
-    padding:40px 20px;
-  }
-
-  .admin-container.active{
-    display:block;
-  }
-
-  .admin-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:40px;
-    padding-bottom:20px;
-    border-bottom:1px solid var(--line);
-  }
-
-  .admin-header h1{
-    font-family:'Fraunces', serif;
-    font-size:32px;
-    color:var(--cream);
-  }
-
-  .user-info{
-    display:flex;
-    align-items:center;
-    gap:15px;
-  }
-
-  .logout-btn{
-    padding:10px 20px;
-    background:rgba(181,98,47,0.2);
-    border:1px solid var(--ember-dim);
-    color:var(--cream);
-    border-radius:2px;
-    cursor:pointer;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.12em;
-    transition:all .3s ease;
-  }
-
-  .logout-btn:hover{
-    background:rgba(181,98,47,0.4);
-  }
-
-  .control-fecha{
-    margin-bottom:30px;
-    padding:20px;
-    background:rgba(51,41,34,0.5);
-    border:1px solid var(--line);
-    border-radius:4px;
-    display:flex;
-    gap:15px;
-    align-items:center;
-  }
-
-  .control-fecha label{
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:0.1em;
-    color:var(--ember);
-  }
-
-  .control-fecha input{
-    background:rgba(7,6,5,0.5);
-    border:1px solid rgba(181,98,47,0.3);
-    border-radius:2px;
-    padding:8px 12px;
-    color:var(--cream);
-    font-family:inherit;
-  }
-
-  .horas-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(100px, 1fr));
-    gap:15px;
-    margin-bottom:30px;
-  }
-
-  .hora-card{
-    background:rgba(51,41,34,0.5);
-    border:2px solid rgba(181,98,47,0.3);
-    border-radius:6px;
-    padding:15px;
-    text-align:center;
-    cursor:pointer;
-    transition:all .3s ease;
-  }
-
-  .hora-card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 8px 20px rgba(181,98,47,0.2);
-  }
-
-  .hora-card.disponible{
-    border-color:#4caf50;
-    background:rgba(76,175,80,0.15);
-  }
-
-  .hora-card.ocupada{
-    border-color:#ff6b6b;
-    background:rgba(255,107,107,0.15);
-  }
-
-  .hora-numero{
-    font-size:20px;
-    font-weight:bold;
-    color:var(--ember);
-    margin-bottom:8px;
-  }
-
-  .hora-estado{
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.1em;
-    font-weight:500;
-  }
-
-  .hora-estado.disponible{
-    color:#4caf50;
-  }
-
-  .hora-estado.ocupada{
-    color:#ff6b6b;
-  }
-
-  .table-wrapper{
-    overflow-x:auto;
-    background:rgba(51,41,34,0.5);
-    border:1px solid var(--line);
-    border-radius:2px;
-    margin-top:40px;
-  }
-
-  table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:12px;
-  }
-
-  table th{
-    background:rgba(26,21,18,0.8);
-    padding:14px;
-    text-align:left;
-    font-weight:500;
-    text-transform:uppercase;
-    letter-spacing:0.12em;
-    color:var(--ember);
-    border-bottom:1px solid var(--line);
-  }
-
-  table td{
-    padding:12px 14px;
-    border-bottom:1px solid var(--line);
-    color:var(--cream);
-  }
-
-  table tr:hover{
-    background:rgba(181,98,47,0.08);
-  }
-
-  .estado-badge{
-    display:inline-block;
-    padding:4px 8px;
-    border-radius:2px;
-    font-size:10px;
-    font-weight:bold;
-    text-transform:uppercase;
-  }
-
-  .estado-badge.confirmada{
-    background:rgba(76,175,80,0.3);
-    color:#a3d977;
-  }
-
-  .estado-badge.pendiente{
-    background:rgba(255,179,71,0.3);
-    color:#ffd4a3;
-  }
-
-  .estado-badge.noshow{
-    background:rgba(255,107,107,0.3);
-    color:#ff9999;
-  }
-
-  .titulo-seccion{
-    font-family:'Fraunces', serif;
-    color:var(--ember);
-    font-size:20px;
-    margin-top:40px;
-    margin-bottom:20px;
-  }
-
-  @media (max-width: 768px) {
-    .admin-header{flex-direction:column; gap:20px; align-items:flex-start;}
-    .control-fecha{flex-direction:column; align-items:flex-start;}
-    .horas-grid{grid-template-columns:repeat(3, 1fr);}
-    table{font-size:10px;}
-    table th, table td{padding:8px;}
-  }
+:root{--black-0:#070605;--black-1:#100d0b;--ash:#332922;--ember:#b5622f;--ember-dim:#8a4c28;--cream:#eae1d4;--cream-dim:#b9ada0;--line:rgba(234,225,212,0.1);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:linear-gradient(180deg,var(--black-0) 0%,var(--black-1) 40%,var(--black-0) 100%);color:var(--cream);font-family:'Jost',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:300;min-height:100vh;}
+.container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.auth-box{background:linear-gradient(135deg,rgba(51,41,34,0.8),rgba(26,21,18,0.9));border:1px solid var(--line);border-radius:4px;padding:60px 40px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.auth-box h1{font-family:'Fraunces',serif;font-size:32px;margin-bottom:10px;color:var(--cream);}
+.subtitle{font-size:13px;color:var(--cream-dim);margin-bottom:40px;letter-spacing:0.08em;}
+.field{margin-bottom:20px;}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:var(--ember);margin-bottom:8px;font-weight:500;}
+.field input{width:100%;background:rgba(7,6,5,0.5);border:1px solid rgba(181,98,47,0.3);border-radius:2px;padding:12px 14px;font-family:inherit;font-size:14px;color:var(--cream);transition:all .3s ease;}
+.field input:focus{outline:none;border-color:var(--ember);background:rgba(7,6,5,0.7);box-shadow:0 0 0 2px rgba(181,98,47,0.2);}
+.password-wrapper{position:relative;}
+.password-wrapper input{padding-right:45px;}
+.toggle-password{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--ember);cursor:pointer;font-size:18px;padding:5px;}
+.btn{width:100%;padding:12px;background:linear-gradient(180deg,var(--ember) 0%,var(--ember-dim) 100%);border:1px solid var(--ember);color:#120c08;font-weight:500;border-radius:2px;cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:0.14em;transition:all .3s ease;margin-top:10px;}
+.btn:hover{background:linear-gradient(180deg,#c47542 0%,var(--ember) 100%);box-shadow:0 8px 30px -6px rgba(181,98,47,0.5);}
+.btn:disabled{opacity:0.6;cursor:not-allowed;}
+.message{padding:12px;border-radius:2px;margin-bottom:20px;font-size:12px;display:none;}
+.message.show{display:block;}
+.message.error{background:rgba(255,107,107,0.2);border:1px solid #ff6b6b;color:#ff9999;}
+.message.success{background:rgba(107,255,107,0.2);border:1px solid #6bff6b;color:#99ff99;}
+.toggle-form{text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid var(--line);}
+.toggle-form button{background:none;border:none;color:var(--ember);cursor:pointer;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;}
+.admin-container{display:none;width:100%;max-width:1200px;margin:0 auto;padding:40px 20px;}
+.admin-container.active{display:block;}
+.admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;padding-bottom:20px;border-bottom:1px solid var(--line);}
+.admin-header h1{font-family:'Fraunces',serif;font-size:32px;color:var(--cream);}
+.user-info{display:flex;align-items:center;gap:15px;}
+.logout-btn{padding:10px 20px;background:rgba(181,98,47,0.2);border:1px solid var(--ember-dim);color:var(--cream);border-radius:2px;cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:0.12em;transition:all .3s ease;}
+.logout-btn:hover{background:rgba(181,98,47,0.4);}
+.control-fecha{margin-bottom:30px;padding:20px;background:rgba(51,41,34,0.5);border:1px solid var(--line);border-radius:4px;display:flex;gap:15px;align-items:center;}
+.control-fecha label{font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--ember);}
+.control-fecha input{background:rgba(7,6,5,0.5);border:1px solid rgba(181,98,47,0.3);border-radius:2px;padding:8px 12px;color:var(--cream);font-family:inherit;}
+.horas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:15px;margin-bottom:30px;}
+.hora-card{background:rgba(51,41,34,0.5);border:2px solid rgba(181,98,47,0.3);border-radius:6px;padding:15px;text-align:center;cursor:pointer;transition:all .3s ease;}
+.hora-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(181,98,47,0.2);}
+.hora-card.disponible{border-color:#4caf50;background:rgba(76,175,80,0.15);}
+.hora-card.ocupada{border-color:#ff6b6b;background:rgba(255,107,107,0.15);}
+.hora-numero{font-size:20px;font-weight:bold;color:var(--ember);margin-bottom:8px;}
+.hora-estado{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;font-weight:500;}
+.hora-estado.disponible{color:#4caf50;}
+.hora-estado.ocupada{color:#ff6b6b;}
+.table-wrapper{overflow-x:auto;background:rgba(51,41,34,0.5);border:1px solid var(--line);border-radius:2px;margin-top:40px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+table th{background:rgba(26,21,18,0.8);padding:14px;text-align:left;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:var(--ember);border-bottom:1px solid var(--line);}
+table td{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--cream);}
+table tr:hover{background:rgba(181,98,47,0.08);}
+.estado-badge{display:inline-block;padding:4px 8px;border-radius:2px;font-size:10px;font-weight:bold;text-transform:uppercase;}
+.estado-badge.confirmada{background:rgba(76,175,80,0.3);color:#a3d977;}
+.estado-badge.noshow{background:rgba(255,107,107,0.3);color:#ff9999;}
+.titulo-seccion{font-family:'Fraunces',serif;color:var(--ember);font-size:20px;margin-top:40px;margin-bottom:20px;}
+@media(max-width:768px){.admin-header{flex-direction:column;gap:20px;}.control-fecha{flex-direction:column;}.horas-grid{grid-template-columns:repeat(3,1fr);}}
 </style>
 </head>
 <body>
 
-<!-- AUTH SECTION -->
 <div class="container" id="authSection">
   <div class="auth-box">
     <h1>Ceniza Admin</h1>
     <p class="subtitle">Control de Disponibilidad y Reservaciones</p>
-
     <div class="message" id="authMessage"></div>
     
-    <!-- FORM LOGIN -->
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="field">
         <label>Correo Electrónico</label>
         <input type="email" id="loginEmail" placeholder="tu@email.com" required>
       </div>
-      
       <div class="field">
         <label>Contraseña</label>
         <div class="password-wrapper">
           <input type="password" id="loginPassword" placeholder="••••••••" required>
-          <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword')">👁️</button>
+          <button type="button" class="toggle-password" onclick="togglePass('loginPassword')">👁️</button>
         </div>
       </div>
-      
       <button type="submit" class="btn" id="loginBtn">Ingresar</button>
     </form>
 
-    <!-- FORM REGISTRO -->
     <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
       <div class="field">
         <label>Correo Electrónico</label>
         <input type="email" id="registerEmail" placeholder="tu@email.com" required>
       </div>
-      
       <div class="field">
         <label>Contraseña</label>
         <div class="password-wrapper">
           <input type="password" id="registerPassword" placeholder="••••••••" required minlength="6">
-          <button type="button" class="toggle-password" onclick="togglePasswordVisibility('registerPassword')">👁️</button>
+          <button type="button" class="toggle-password" onclick="togglePass('registerPassword')">👁️</button>
         </div>
       </div>
-      
       <button type="submit" class="btn" id="registerBtn">Registrarse</button>
     </form>
 
-    <!-- Toggle entre login y registro -->
     <div class="toggle-form">
-      <p id="toggleText" style="color:var(--cream-dim); font-size:12px; margin-bottom:10px;">
-        ¿No tienes cuenta? 
-        <button type="button" id="toggleFormBtn" onclick="toggleAuthForm()">Regístrate aquí</button>
+      <p id="toggleText" style="color:var(--cream-dim);font-size:12px;margin-bottom:10px;">
+        ¿No tienes cuenta? <button type="button" onclick="toggleForm()">Regístrate aquí</button>
       </p>
     </div>
   </div>
 </div>
 
-<!-- ADMIN SECTION -->
 <div class="admin-container" id="adminSection">
   <div class="admin-header">
     <h1>🍽️ Ceniza Control de Horas y Reservaciones</h1>
     <div class="user-info">
-      <div id="userEmail" style="font-size:12px; color:var(--cream-dim);"></div>
+      <div id="userEmail" style="font-size:12px;color:var(--cream-dim);"></div>
       <button class="logout-btn" onclick="handleLogout()">Cerrar Sesión</button>
     </div>
   </div>
 
   <div class="control-fecha">
-    <label for="fechaControl">Selecciona Fecha:</label>
+    <label>Selecciona Fecha:</label>
     <input type="date" id="fechaControl" value="">
   </div>
 
-  <div id="horasContainer">
-    <div class="horas-grid" id="horasGrid"></div>
-  </div>
+  <div class="horas-grid" id="horasGrid"></div>
 
-  <div class="titulo-seccion">Reservaciones de Hoy</div>
+  <div class="titulo-seccion">Reservaciones</div>
   <div class="table-wrapper">
     <table>
       <thead>
@@ -489,78 +136,73 @@
         </tr>
       </thead>
       <tbody id="reservacionesTableBody">
-        <tr><td colspan="6" style="text-align:center; color:var(--cream-dim);">Cargando...</td></tr>
+        <tr><td colspan="6" style="text-align:center;">Cargando...</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script>
 const SUPABASE_URL = 'https://imibozoirpsnpllylmjh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltaWJvem9pcnBzbnBsbHlsbWpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3NTU2NjYsImV4cCI6MjEwMjMzMTY2Nn0.RHekt23ywPqdmTzyx895Lbq3utGRxlQQ71UVBshk2Wg';
 
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient = null;
 let currentUser = null;
 let fechaActual = new Date().toISOString().split('T')[0];
 
-const HORAS_DISPONIBLES = [
-  '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', 
-  '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
-  '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
-];
+const HORAS = ['11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30','22:00'];
 
-// Exponer funciones globalmente
-window.toggleAuthForm = toggleAuthForm;
-window.togglePasswordVisibility = togglePasswordVisibility;
-window.handleLogin = handleLogin;
-window.handleRegister = handleRegister;
-window.handleLogout = handleLogout;
-window.toggleHora = toggleHora;
-window.marcarNoShow = marcarNoShow;
-
-function toggleAuthForm() {
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const toggleText = document.getElementById('toggleText');
-
-  if (loginForm.style.display === 'none') {
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-    toggleText.innerHTML = '¿Tienes cuenta? <button type="button" onclick="toggleAuthForm()">Inicia sesión</button>';
-  } else {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-    toggleText.innerHTML = '¿No tienes cuenta? <button type="button" onclick="toggleAuthForm()">Regístrate aquí</button>';
+function init() {
+  if (window.supabase) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    checkAuth();
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        currentUser = session.user;
+        showAdmin();
+        loadHoras();
+        loadReservaciones();
+      } else {
+        showLogin();
+      }
+    });
   }
 }
 
-function togglePasswordVisibility(inputId) {
-  const input = document.getElementById(inputId);
+function togglePass(id) {
+  const input = document.getElementById(id);
   input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function toggleForm() {
+  const login = document.getElementById('loginForm');
+  const register = document.getElementById('registerForm');
+  if (login.style.display === 'none') {
+    login.style.display = 'block';
+    register.style.display = 'none';
+    document.getElementById('toggleText').innerHTML = '¿Tienes cuenta? <button type="button" onclick="toggleForm()">Inicia sesión</button>';
+  } else {
+    login.style.display = 'none';
+    register.style.display = 'block';
+    document.getElementById('toggleText').innerHTML = '¿No tienes cuenta? <button type="button" onclick="toggleForm()">Regístrate aquí</button>';
+  }
 }
 
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
-  const loginBtn = document.getElementById('loginBtn');
-
-  loginBtn.disabled = true;
-  loginBtn.textContent = 'Ingresando...';
-
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = 'Ingresando...';
   try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    currentUser = data.user;
-    showAdminPanel();
-    cargarHoras();
-    cargarReservacionesDelDia();
   } catch (error) {
-    showMessage('authMessage', '❌ ' + error.message, 'error');
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'Ingresar';
+    msg('❌ ' + error.message);
+    btn.disabled = false;
+    btn.textContent = 'Ingresar';
   }
 }
 
@@ -568,199 +210,126 @@ async function handleRegister(e) {
   e.preventDefault();
   const email = document.getElementById('registerEmail').value;
   const password = document.getElementById('registerPassword').value;
-  const registerBtn = document.getElementById('registerBtn');
-
-  registerBtn.disabled = true;
-  registerBtn.textContent = 'Registrando...';
-
+  const btn = document.getElementById('registerBtn');
+  btn.disabled = true;
+  btn.textContent = 'Registrando...';
   try {
     const { error } = await supabaseClient.auth.signUp({ email, password });
     if (error) throw error;
-    showMessage('authMessage', '✓ Cuenta creada. Por favor inicia sesión.', 'success');
-    document.getElementById('registerForm').reset();
+    msg('✓ Cuenta creada. Inicia sesión.');
     setTimeout(() => {
-      toggleAuthForm();
+      toggleForm();
       document.getElementById('loginEmail').value = email;
-    }, 2000);
+    }, 1500);
   } catch (error) {
-    showMessage('authMessage', '❌ ' + error.message, 'error');
-    registerBtn.disabled = false;
-    registerBtn.textContent = 'Registrarse';
+    msg('❌ ' + error.message);
+    btn.disabled = false;
+    btn.textContent = 'Registrarse';
   }
 }
 
 async function handleLogout() {
   await supabaseClient.auth.signOut();
-  currentUser = null;
-  showAuthForm();
 }
 
-function showAuthForm() {
+function checkAuth() {
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      currentUser = session.user;
+      showAdmin();
+      loadHoras();
+      loadReservaciones();
+    }
+  });
+}
+
+function showLogin() {
   document.getElementById('authSection').style.display = 'flex';
   document.getElementById('adminSection').classList.remove('active');
 }
 
-function showAdminPanel() {
+function showAdmin() {
   document.getElementById('authSection').style.display = 'none';
   document.getElementById('adminSection').classList.add('active');
-  document.getElementById('userEmail').textContent = '📧 ' + (currentUser?.email || '');
+  document.getElementById('userEmail').textContent = '📧 ' + currentUser.email;
+  document.getElementById('fechaControl').value = fechaActual;
+  document.getElementById('fechaControl').addEventListener('change', (e) => {
+    fechaActual = e.target.value;
+    loadHoras();
+    loadReservaciones();
+  });
 }
 
-async function cargarHoras() {
+async function loadHoras() {
   try {
-    const { data: reservaciones, error } = await supabaseClient
-      .from('mis_citas')
-      .select('hora')
-      .eq('fecha_reserva', fechaActual)
-      .eq('estado', 'confirmada');
-
-    if (error) throw error;
-
-    const horasReservadas = (reservaciones || []).map(r => r.hora);
+    const { data } = await supabaseClient.from('mis_citas').select('hora').eq('fecha_reserva', fechaActual).eq('estado', 'confirmada');
+    const ocupadas = (data || []).map(r => r.hora);
     const grid = document.getElementById('horasGrid');
     grid.innerHTML = '';
-
-    HORAS_DISPONIBLES.forEach(hora => {
-      const estaReservada = horasReservadas.includes(hora);
+    HORAS.forEach(hora => {
       const card = document.createElement('div');
-      card.className = `hora-card ${estaReservada ? 'ocupada' : 'disponible'}`;
-      card.innerHTML = `
-        <div class="hora-numero">${hora}</div>
-        <div class="hora-estado ${estaReservada ? 'ocupada' : 'disponible'}">
-          ${estaReservada ? '❌ OCUPADA' : '✓ DISPONIBLE'}
-        </div>
-      `;
-      card.addEventListener('click', () => toggleHora(hora, estaReservada));
+      card.className = `hora-card ${ocupadas.includes(hora) ? 'ocupada' : 'disponible'}`;
+      card.innerHTML = `<div class="hora-numero">${hora}</div><div class="hora-estado ${ocupadas.includes(hora) ? 'ocupada' : 'disponible'}">${ocupadas.includes(hora) ? '❌ OCUPADA' : '✓ LIBRE'}</div>`;
+      card.onclick = () => toggleHora(hora, ocupadas.includes(hora));
       grid.appendChild(card);
     });
-  } catch (error) {
-    showMessage('authMessage', '❌ Error cargando horas', 'error');
-  }
-}
-
-async function toggleHora(hora, estaReservada) {
-  try {
-    if (estaReservada) {
-      const { data: reservacion } = await supabaseClient
-        .from('mis_citas')
-        .select('id')
-        .eq('fecha_reserva', fechaActual)
-        .eq('hora', hora)
-        .eq('estado', 'confirmada')
-        .single();
-
-      if (reservacion) {
-        await supabaseClient.from('mis_citas').delete().eq('id', reservacion.id);
-        showMessage('authMessage', `✓ Hora ${hora} liberada`, 'success');
-      }
-    } else {
-      await supabaseClient.from('mis_citas').insert([{
-        nombre_cliente: 'Sistema',
-        teléfono: '-',
-        fecha_reserva: fechaActual,
-        hora: hora,
-        personas: '1',
-        servicio_solicitado: 'Mantenimiento',
-        estado: 'confirmada',
-        notas: 'Bloqueado por admin'
-      }]);
-      showMessage('authMessage', `✓ Hora ${hora} marcada como ocupada`, 'success');
-    }
-    cargarHoras();
-    cargarReservacionesDelDia();
-  } catch (error) {
-    showMessage('authMessage', '❌ Error: ' + error.message, 'error');
-  }
-}
-
-async function cargarReservacionesDelDia() {
-  try {
-    const { data, error } = await supabaseClient
-      .from('mis_citas')
-      .select('*')
-      .eq('fecha_reserva', fechaActual)
-      .order('hora', { ascending: true });
-
-    if (error) throw error;
-
-    const tbody = document.getElementById('reservacionesTableBody');
-    if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--cream-dim);">Sin reservaciones</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = data.map(r => `
-      <tr>
-        <td><strong>${r.nombre_cliente}</strong></td>
-        <td>${r.teléfono}</td>
-        <td>${r.hora}</td>
-        <td>${r.personas}</td>
-        <td><span class="estado-badge ${r.estado}">${r.estado}</span></td>
-        <td>
-          ${r.nombre_cliente !== 'Sistema' && r.estado !== 'noshow' ? 
-            `<button class="logout-btn" style="width:100%; padding:6px;" onclick="marcarNoShow('${r.id}')">No-Show</button>` 
-            : '-'}
-        </td>
-      </tr>
-    `).join('');
   } catch (error) {
     console.error('Error:', error);
   }
 }
 
-async function marcarNoShow(reservacionId) {
+async function toggleHora(hora, ocupada) {
   try {
-    await supabaseClient.from('mis_citas').update({ estado: 'noshow' }).eq('id', reservacionId);
-    showMessage('authMessage', '✓ Marcado como no-show', 'success');
-    cargarReservacionesDelDia();
+    if (ocupada) {
+      const { data } = await supabaseClient.from('mis_citas').select('id').eq('fecha_reserva', fechaActual).eq('hora', hora).eq('estado', 'confirmada').single();
+      if (data) {
+        await supabaseClient.from('mis_citas').delete().eq('id', data.id);
+        msg(`✓ Hora ${hora} liberada`);
+      }
+    } else {
+      await supabaseClient.from('mis_citas').insert([{nombre_cliente:'Sistema',teléfono:'-',fecha_reserva:fechaActual,hora:hora,personas:'1',servicio_solicitado:'Mantenimiento',estado:'confirmada',notas:'Bloqueado'}]);
+      msg(`✓ Hora ${hora} ocupada`);
+    }
+    loadHoras();
+    loadReservaciones();
   } catch (error) {
-    showMessage('authMessage', '❌ Error: ' + error.message, 'error');
+    msg('❌ ' + error.message);
   }
 }
 
-function showMessage(elementId, message, type) {
-  const el = document.getElementById(elementId);
-  el.textContent = message;
-  el.className = 'message show ' + type;
-  if (type !== 'error') {
-    setTimeout(() => el.classList.remove('show'), 4000);
+async function loadReservaciones() {
+  try {
+    const { data } = await supabaseClient.from('mis_citas').select('*').eq('fecha_reserva', fechaActual).order('hora');
+    const tbody = document.getElementById('reservacionesTableBody');
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Sin reservaciones</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(r => `<tr><td>${r.nombre_cliente}</td><td>${r.teléfono}</td><td>${r.hora}</td><td>${r.personas}</td><td><span class="estado-badge ${r.estado}">${r.estado}</span></td><td>${r.nombre_cliente !== 'Sistema' && r.estado !== 'noshow' ? `<button class="logout-btn" style="width:100%;padding:6px;" onclick="marcarNoShow('${r.id}')">No-Show</button>` : '-'}</td></tr>`).join('');
+  } catch (error) {
+    console.error('Error:', error);
   }
 }
 
-// Inicializar
-document.getElementById('fechaControl').value = fechaActual;
-document.getElementById('fechaControl').addEventListener('change', (e) => {
-  fechaActual = e.target.value;
-  cargarHoras();
-  cargarReservacionesDelDia();
-});
-
-supabaseClient.auth.getSession().then(({ data: { session } }) => {
-  if (session) {
-    currentUser = session.user;
-    showAdminPanel();
-    cargarHoras();
-    cargarReservacionesDelDia();
+async function marcarNoShow(id) {
+  try {
+    await supabaseClient.from('mis_citas').update({estado:'noshow'}).eq('id', id);
+    msg('✓ Marcado como no-show');
+    loadReservaciones();
+  } catch (error) {
+    msg('❌ ' + error.message);
   }
-});
+}
 
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (session) {
-    currentUser = session.user;
-    showAdminPanel();
-    cargarHoras();
-    cargarReservacionesDelDia();
-  } else {
-    showAuthForm();
-  }
-});
+function msg(text) {
+  const el = document.getElementById('authMessage');
+  el.textContent = text;
+  el.className = 'message show ' + (text.includes('❌') ? 'error' : 'success');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
 
-setInterval(() => {
-  if (currentUser) {
-    cargarHoras();
-    cargarReservacionesDelDia();
-  }
-}, 3000);
+setTimeout(init, 200);
+setInterval(() => { if (currentUser) { loadHoras(); loadReservaciones(); } }, 3000);
 </script>
 
 </body>
