@@ -95,7 +95,6 @@
     box-shadow:0 0 0 2px rgba(181,98,47,0.2);
   }
 
-  /* Password field wrapper */
   .password-wrapper{
     position:relative;
   }
@@ -148,16 +147,6 @@
     cursor:not-allowed;
   }
 
-  .btn-secondary{
-    background:rgba(181,98,47,0.2);
-    border:1px solid var(--ember-dim);
-    color:var(--cream);
-  }
-
-  .btn-secondary:hover{
-    background:rgba(181,98,47,0.4);
-  }
-
   .message{
     padding:12px;
     border-radius:2px;
@@ -204,7 +193,6 @@
     color:var(--cream);
   }
 
-  /* ADMIN PANEL */
   .admin-container{
     display:none;
     width:100%;
@@ -255,7 +243,6 @@
     background:rgba(181,98,47,0.4);
   }
 
-  /* CONTROL DE HORAS */
   .control-fecha{
     margin-bottom:30px;
     padding:20px;
@@ -337,7 +324,6 @@
     color:#ff6b6b;
   }
 
-  /* TABLA RESERVACIONES */
   .table-wrapper{
     overflow-x:auto;
     background:rgba(51,41,34,0.5);
@@ -406,28 +392,11 @@
   }
 
   @media (max-width: 768px) {
-    .admin-header{
-      flex-direction:column;
-      gap:20px;
-      align-items:flex-start;
-    }
-
-    .control-fecha{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-
-    .horas-grid{
-      grid-template-columns:repeat(3, 1fr);
-    }
-
-    table{
-      font-size:10px;
-    }
-
-    table th, table td{
-      padding:8px;
-    }
+    .admin-header{flex-direction:column; gap:20px; align-items:flex-start;}
+    .control-fecha{flex-direction:column; align-items:flex-start;}
+    .horas-grid{grid-template-columns:repeat(3, 1fr);}
+    table{font-size:10px;}
+    table th, table td{padding:8px;}
   }
 </style>
 </head>
@@ -497,20 +466,15 @@
     </div>
   </div>
 
-  <!-- SELECTOR DE FECHA -->
   <div class="control-fecha">
     <label for="fechaControl">Selecciona Fecha:</label>
     <input type="date" id="fechaControl" value="">
   </div>
 
-  <!-- GRID DE HORAS -->
   <div id="horasContainer">
-    <div class="horas-grid" id="horasGrid">
-      <!-- Se llena automáticamente -->
-    </div>
+    <div class="horas-grid" id="horasGrid"></div>
   </div>
 
-  <!-- RESERVACIONES DEL DÍA -->
   <div class="titulo-seccion">Reservaciones de Hoy</div>
   <div class="table-wrapper">
     <table>
@@ -525,332 +489,278 @@
         </tr>
       </thead>
       <tbody id="reservacionesTableBody">
-        <tr>
-          <td colspan="6" style="text-align:center; color:var(--cream-dim);">Cargando...</td>
-        </tr>
+        <tr><td colspan="6" style="text-align:center; color:var(--cream-dim);">Cargando...</td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/main.min.js"></script>
-<script>
-  const SUPABASE_URL = 'https://imibozoirpsnpllylmjh.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltaWJvem9pcnBzbnBsbHlsbWpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3NTU2NjYsImV4cCI6MjEwMjMzMTY2Nn0.RHekt23ywPqdmTzyx895Lbq3utGRxlQQ71UVBshk2Wg';
-  
-  let supabaseClient = null;
-  let currentUser = null;
-  let fechaActual = new Date().toISOString().split('T')[0];
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-  const HORAS_DISPONIBLES = [
-    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', 
-    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
-    '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
-  ];
+const SUPABASE_URL = 'https://imibozoirpsnpllylmjh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltaWJvem9pcnBzbnBsbHlsbWpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY3NTU2NjYsImV4cCI6MjEwMjMzMTY2Nn0.RHekt23ywPqdmTzyx895Lbq3utGRxlQQ71UVBshk2Wg';
 
-  setTimeout(() => {
-    if (window.supabase) {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      checkAuth();
-      setupAuthListener();
-      
-      document.getElementById('fechaControl').value = fechaActual;
-      document.getElementById('fechaControl').addEventListener('change', (e) => {
-        fechaActual = e.target.value;
-        cargarHoras();
-        cargarReservacionesDelDia();
-      });
-    }
-  }, 100);
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+let fechaActual = new Date().toISOString().split('T')[0];
 
-  // Toggle entre login y registro
-  function toggleAuthForm() {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const toggleText = document.getElementById('toggleText');
+const HORAS_DISPONIBLES = [
+  '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', 
+  '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+  '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
+];
 
-    if (loginForm.style.display === 'none') {
-      // Mostrar login
-      loginForm.style.display = 'block';
-      registerForm.style.display = 'none';
-      toggleText.innerHTML = '¿Tienes cuenta? <button type="button" onclick="toggleAuthForm()">Inicia sesión</button>';
-    } else {
-      // Mostrar registro
-      loginForm.style.display = 'none';
-      registerForm.style.display = 'block';
-      toggleText.innerHTML = '¿No tienes cuenta? <button type="button" onclick="toggleAuthForm()">Regístrate aquí</button>';
-    }
+// Exponer funciones globalmente
+window.toggleAuthForm = toggleAuthForm;
+window.togglePasswordVisibility = togglePasswordVisibility;
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.handleLogout = handleLogout;
+window.toggleHora = toggleHora;
+window.marcarNoShow = marcarNoShow;
+
+function toggleAuthForm() {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const toggleText = document.getElementById('toggleText');
+
+  if (loginForm.style.display === 'none') {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+    toggleText.innerHTML = '¿Tienes cuenta? <button type="button" onclick="toggleAuthForm()">Inicia sesión</button>';
+  } else {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    toggleText.innerHTML = '¿No tienes cuenta? <button type="button" onclick="toggleAuthForm()">Regístrate aquí</button>';
   }
+}
 
-  // Toggle visibility de contraseña
-  function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    if (input.type === 'password') {
-      input.type = 'text';
-    } else {
-      input.type = 'password';
-    }
+function togglePasswordVisibility(inputId) {
+  const input = document.getElementById(inputId);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const loginBtn = document.getElementById('loginBtn');
+
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Ingresando...';
+
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    currentUser = data.user;
+    showAdminPanel();
+    cargarHoras();
+    cargarReservacionesDelDia();
+  } catch (error) {
+    showMessage('authMessage', '❌ ' + error.message, 'error');
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Ingresar';
   }
+}
 
-  function setupAuthListener() {
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        currentUser = session.user;
-        showAdminPanel();
-        cargarHoras();
-        cargarReservacionesDelDia();
-      } else {
-        showAuthForm();
-      }
+async function handleRegister(e) {
+  e.preventDefault();
+  const email = document.getElementById('registerEmail').value;
+  const password = document.getElementById('registerPassword').value;
+  const registerBtn = document.getElementById('registerBtn');
+
+  registerBtn.disabled = true;
+  registerBtn.textContent = 'Registrando...';
+
+  try {
+    const { error } = await supabaseClient.auth.signUp({ email, password });
+    if (error) throw error;
+    showMessage('authMessage', '✓ Cuenta creada. Por favor inicia sesión.', 'success');
+    document.getElementById('registerForm').reset();
+    setTimeout(() => {
+      toggleAuthForm();
+      document.getElementById('loginEmail').value = email;
+    }, 2000);
+  } catch (error) {
+    showMessage('authMessage', '❌ ' + error.message, 'error');
+    registerBtn.disabled = false;
+    registerBtn.textContent = 'Registrarse';
+  }
+}
+
+async function handleLogout() {
+  await supabaseClient.auth.signOut();
+  currentUser = null;
+  showAuthForm();
+}
+
+function showAuthForm() {
+  document.getElementById('authSection').style.display = 'flex';
+  document.getElementById('adminSection').classList.remove('active');
+}
+
+function showAdminPanel() {
+  document.getElementById('authSection').style.display = 'none';
+  document.getElementById('adminSection').classList.add('active');
+  document.getElementById('userEmail').textContent = '📧 ' + (currentUser?.email || '');
+}
+
+async function cargarHoras() {
+  try {
+    const { data: reservaciones, error } = await supabaseClient
+      .from('mis_citas')
+      .select('hora')
+      .eq('fecha_reserva', fechaActual)
+      .eq('estado', 'confirmada');
+
+    if (error) throw error;
+
+    const horasReservadas = (reservaciones || []).map(r => r.hora);
+    const grid = document.getElementById('horasGrid');
+    grid.innerHTML = '';
+
+    HORAS_DISPONIBLES.forEach(hora => {
+      const estaReservada = horasReservadas.includes(hora);
+      const card = document.createElement('div');
+      card.className = `hora-card ${estaReservada ? 'ocupada' : 'disponible'}`;
+      card.innerHTML = `
+        <div class="hora-numero">${hora}</div>
+        <div class="hora-estado ${estaReservada ? 'ocupada' : 'disponible'}">
+          ${estaReservada ? '❌ OCUPADA' : '✓ DISPONIBLE'}
+        </div>
+      `;
+      card.addEventListener('click', () => toggleHora(hora, estaReservada));
+      grid.appendChild(card);
     });
+  } catch (error) {
+    showMessage('authMessage', '❌ Error cargando horas', 'error');
   }
+}
 
-  function checkAuth() {
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        currentUser = session.user;
-        showAdminPanel();
-        cargarHoras();
-        cargarReservacionesDelDia();
+async function toggleHora(hora, estaReservada) {
+  try {
+    if (estaReservada) {
+      const { data: reservacion } = await supabaseClient
+        .from('mis_citas')
+        .select('id')
+        .eq('fecha_reserva', fechaActual)
+        .eq('hora', hora)
+        .eq('estado', 'confirmada')
+        .single();
+
+      if (reservacion) {
+        await supabaseClient.from('mis_citas').delete().eq('id', reservacion.id);
+        showMessage('authMessage', `✓ Hora ${hora} liberada`, 'success');
       }
-    });
-  }
-
-  async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    const loginBtn = document.getElementById('loginBtn');
-
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Ingresando...';
-
-    try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) throw error;
-      currentUser = data.user;
-      showAdminPanel();
-      cargarHoras();
-      cargarReservacionesDelDia();
-    } catch (error) {
-      showMessage('authMessage', '❌ ' + error.message, 'error');
-      loginBtn.disabled = false;
-      loginBtn.textContent = 'Ingresar';
+    } else {
+      await supabaseClient.from('mis_citas').insert([{
+        nombre_cliente: 'Sistema',
+        teléfono: '-',
+        fecha_reserva: fechaActual,
+        hora: hora,
+        personas: '1',
+        servicio_solicitado: 'Mantenimiento',
+        estado: 'confirmada',
+        notas: 'Bloqueado por admin'
+      }]);
+      showMessage('authMessage', `✓ Hora ${hora} marcada como ocupada`, 'success');
     }
+    cargarHoras();
+    cargarReservacionesDelDia();
+  } catch (error) {
+    showMessage('authMessage', '❌ Error: ' + error.message, 'error');
   }
+}
 
-  async function handleRegister(e) {
-    e.preventDefault();
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    const registerBtn = document.getElementById('registerBtn');
+async function cargarReservacionesDelDia() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('mis_citas')
+      .select('*')
+      .eq('fecha_reserva', fechaActual)
+      .order('hora', { ascending: true });
 
-    registerBtn.disabled = true;
-    registerBtn.textContent = 'Registrando...';
+    if (error) throw error;
 
-    try {
-      const { data, error } = await supabaseClient.auth.signUp({
-        email,
-        password
-      });
-
-      if (error) throw error;
-      
-      showMessage('authMessage', '✓ Cuenta creada exitosamente. Por favor inicia sesión.', 'success');
-      
-      // Limpiar formulario y mostrar login
-      document.getElementById('registerForm').reset();
-      setTimeout(() => {
-        toggleAuthForm();
-        document.getElementById('loginEmail').value = email;
-      }, 2000);
-    } catch (error) {
-      showMessage('authMessage', '❌ ' + error.message, 'error');
-      registerBtn.disabled = false;
-      registerBtn.textContent = 'Registrarse';
+    const tbody = document.getElementById('reservacionesTableBody');
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--cream-dim);">Sin reservaciones</td></tr>';
+      return;
     }
-  }
 
-  async function handleLogout() {
-    await supabaseClient.auth.signOut();
-    currentUser = null;
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td><strong>${r.nombre_cliente}</strong></td>
+        <td>${r.teléfono}</td>
+        <td>${r.hora}</td>
+        <td>${r.personas}</td>
+        <td><span class="estado-badge ${r.estado}">${r.estado}</span></td>
+        <td>
+          ${r.nombre_cliente !== 'Sistema' && r.estado !== 'noshow' ? 
+            `<button class="logout-btn" style="width:100%; padding:6px;" onclick="marcarNoShow('${r.id}')">No-Show</button>` 
+            : '-'}
+        </td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+async function marcarNoShow(reservacionId) {
+  try {
+    await supabaseClient.from('mis_citas').update({ estado: 'noshow' }).eq('id', reservacionId);
+    showMessage('authMessage', '✓ Marcado como no-show', 'success');
+    cargarReservacionesDelDia();
+  } catch (error) {
+    showMessage('authMessage', '❌ Error: ' + error.message, 'error');
+  }
+}
+
+function showMessage(elementId, message, type) {
+  const el = document.getElementById(elementId);
+  el.textContent = message;
+  el.className = 'message show ' + type;
+  if (type !== 'error') {
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+}
+
+// Inicializar
+document.getElementById('fechaControl').value = fechaActual;
+document.getElementById('fechaControl').addEventListener('change', (e) => {
+  fechaActual = e.target.value;
+  cargarHoras();
+  cargarReservacionesDelDia();
+});
+
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (session) {
+    currentUser = session.user;
+    showAdminPanel();
+    cargarHoras();
+    cargarReservacionesDelDia();
+  }
+});
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    currentUser = session.user;
+    showAdminPanel();
+    cargarHoras();
+    cargarReservacionesDelDia();
+  } else {
     showAuthForm();
   }
+});
 
-  function showAuthForm() {
-    document.getElementById('authSection').style.display = 'flex';
-    document.getElementById('adminSection').classList.remove('active');
+setInterval(() => {
+  if (currentUser) {
+    cargarHoras();
+    cargarReservacionesDelDia();
   }
-
-  function showAdminPanel() {
-    document.getElementById('authSection').style.display = 'none';
-    document.getElementById('adminSection').classList.add('active');
-    document.getElementById('userEmail').textContent = '📧 ' + (currentUser?.email || '');
-  }
-
-  // ====== CONTROL DE HORAS ======
-
-  async function cargarHoras() {
-    try {
-      const { data: reservaciones, error } = await supabaseClient
-        .from('mis_citas')
-        .select('hora')
-        .eq('fecha_reserva', fechaActual)
-        .eq('estado', 'confirmada');
-
-      if (error) throw error;
-
-      const horasReservadas = (reservaciones || []).map(r => r.hora);
-      const grid = document.getElementById('horasGrid');
-      grid.innerHTML = '';
-
-      HORAS_DISPONIBLES.forEach(hora => {
-        const estaReservada = horasReservadas.includes(hora);
-        
-        const card = document.createElement('div');
-        card.className = `hora-card ${estaReservada ? 'ocupada' : 'disponible'}`;
-        card.innerHTML = `
-          <div class="hora-numero">${hora}</div>
-          <div class="hora-estado ${estaReservada ? 'ocupada' : 'disponible'}">
-            ${estaReservada ? '❌ OCUPADA' : '✓ DISPONIBLE'}
-          </div>
-        `;
-        
-        card.addEventListener('click', () => toggleHora(hora, estaReservada));
-        grid.appendChild(card);
-      });
-
-    } catch (error) {
-      console.error('Error cargando horas:', error);
-      showMessage('authMessage', '❌ Error cargando horas', 'error');
-    }
-  }
-
-  async function toggleHora(hora, estaReservada) {
-    try {
-      if (estaReservada) {
-        const { data: reservacion, error: errorData } = await supabaseClient
-          .from('mis_citas')
-          .select('id')
-          .eq('fecha_reserva', fechaActual)
-          .eq('hora', hora)
-          .eq('estado', 'confirmada')
-          .single();
-
-        if (errorData && errorData.code !== 'PGRST116') throw errorData;
-
-        if (reservacion) {
-          const { error: errorDelete } = await supabaseClient
-            .from('mis_citas')
-            .delete()
-            .eq('id', reservacion.id);
-
-          if (errorDelete) throw errorDelete;
-          showMessage('authMessage', `✓ Hora ${hora} liberada`, 'success');
-        }
-      } else {
-        const { error } = await supabaseClient
-          .from('mis_citas')
-          .insert([{
-            nombre_cliente: 'Sistema',
-            teléfono: '-',
-            fecha_reserva: fechaActual,
-            hora: hora,
-            personas: '1',
-            servicio_solicitado: 'Mantenimiento',
-            estado: 'confirmada',
-            notas: 'Bloqueado por admin'
-          }]);
-
-        if (error) throw error;
-        showMessage('authMessage', `✓ Hora ${hora} marcada como ocupada`, 'success');
-      }
-
-      cargarHoras();
-      cargarReservacionesDelDia();
-    } catch (error) {
-      console.error('Error:', error);
-      showMessage('authMessage', '❌ Error: ' + error.message, 'error');
-    }
-  }
-
-  // ====== RESERVACIONES ======
-
-  async function cargarReservacionesDelDia() {
-    try {
-      const { data, error } = await supabaseClient
-        .from('mis_citas')
-        .select('*')
-        .eq('fecha_reserva', fechaActual)
-        .order('hora', { ascending: true });
-
-      if (error) throw error;
-
-      const tbody = document.getElementById('reservacionesTableBody');
-      
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--cream-dim);">Sin reservaciones</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = data.map(r => `
-        <tr>
-          <td><strong>${r.nombre_cliente}</strong></td>
-          <td>${r.teléfono}</td>
-          <td>${r.hora}</td>
-          <td>${r.personas}</td>
-          <td><span class="estado-badge ${r.estado}">${r.estado}</span></td>
-          <td>
-            ${r.nombre_cliente !== 'Sistema' && r.estado !== 'noshow' ? 
-              `<button class="logout-btn" style="width:100%; padding:6px;" onclick="marcarNoShow('${r.id}')">No-Show</button>` 
-              : '-'}
-          </td>
-        </tr>
-      `).join('');
-    } catch (error) {
-      console.error('Error cargando reservaciones:', error);
-    }
-  }
-
-  async function marcarNoShow(reservacionId) {
-    try {
-      const { error } = await supabaseClient
-        .from('mis_citas')
-        .update({ estado: 'noshow' })
-        .eq('id', reservacionId);
-
-      if (error) throw error;
-
-      showMessage('authMessage', '✓ Marcado como no-show', 'success');
-      cargarReservacionesDelDia();
-    } catch (error) {
-      showMessage('authMessage', '❌ Error: ' + error.message, 'error');
-    }
-  }
-
-  function showMessage(elementId, message, type) {
-    const el = document.getElementById(elementId);
-    el.textContent = message;
-    el.className = 'message show ' + type;
-    
-    if (type !== 'error') {
-      setTimeout(() => {
-        el.classList.remove('show');
-      }, 4000);
-    }
-  }
-
-  // Recargar cada 3 segundos
-  setInterval(() => {
-    if (currentUser) {
-      cargarHoras();
-      cargarReservacionesDelDia();
-    }
-  }, 3000);
+}, 3000);
 </script>
 
 </body>
