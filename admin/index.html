@@ -95,6 +95,33 @@
     box-shadow:0 0 0 2px rgba(181,98,47,0.2);
   }
 
+  /* Password field wrapper */
+  .password-wrapper{
+    position:relative;
+  }
+
+  .password-wrapper input{
+    padding-right:45px;
+  }
+
+  .toggle-password{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    background:none;
+    border:none;
+    color:var(--ember);
+    cursor:pointer;
+    font-size:18px;
+    padding:5px;
+    transition:all .3s ease;
+  }
+
+  .toggle-password:hover{
+    color:var(--cream);
+  }
+
   .btn{
     width:100%;
     padding:12px;
@@ -108,6 +135,7 @@
     text-transform:uppercase;
     letter-spacing:0.14em;
     transition:all .3s ease;
+    margin-top:10px;
   }
 
   .btn:hover{
@@ -118,6 +146,16 @@
   .btn:disabled{
     opacity:0.6;
     cursor:not-allowed;
+  }
+
+  .btn-secondary{
+    background:rgba(181,98,47,0.2);
+    border:1px solid var(--ember-dim);
+    color:var(--cream);
+  }
+
+  .btn-secondary:hover{
+    background:rgba(181,98,47,0.4);
   }
 
   .message{
@@ -142,6 +180,28 @@
     background:rgba(107,255,107,0.2);
     border:1px solid #6bff6b;
     color:#99ff99;
+  }
+
+  .toggle-form{
+    text-align:center;
+    margin-top:20px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+  }
+
+  .toggle-form button{
+    background:none;
+    border:none;
+    color:var(--ember);
+    cursor:pointer;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    transition:all .3s ease;
+  }
+
+  .toggle-form button:hover{
+    color:var(--cream);
   }
 
   /* ADMIN PANEL */
@@ -377,32 +437,62 @@
 <div class="container" id="authSection">
   <div class="auth-box">
     <h1>Ceniza Admin</h1>
-    <p class="subtitle">Control de Disponibilidad</p>
+    <p class="subtitle">Control de Disponibilidad y Reservaciones</p>
 
-    <div class="message" id="loginError"></div>
+    <div class="message" id="authMessage"></div>
     
+    <!-- FORM LOGIN -->
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="field">
         <label>Correo Electrónico</label>
-        <input type="email" id="loginEmail" placeholder="admin@ceniza.com" required>
+        <input type="email" id="loginEmail" placeholder="tu@email.com" required>
       </div>
       
       <div class="field">
         <label>Contraseña</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" required>
+        <div class="password-wrapper">
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+          <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword')">👁️</button>
+        </div>
       </div>
       
       <button type="submit" class="btn" id="loginBtn">Ingresar</button>
     </form>
+
+    <!-- FORM REGISTRO -->
+    <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
+      <div class="field">
+        <label>Correo Electrónico</label>
+        <input type="email" id="registerEmail" placeholder="tu@email.com" required>
+      </div>
+      
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="password-wrapper">
+          <input type="password" id="registerPassword" placeholder="••••••••" required minlength="6">
+          <button type="button" class="toggle-password" onclick="togglePasswordVisibility('registerPassword')">👁️</button>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn" id="registerBtn">Registrarse</button>
+    </form>
+
+    <!-- Toggle entre login y registro -->
+    <div class="toggle-form">
+      <p id="toggleText" style="color:var(--cream-dim); font-size:12px; margin-bottom:10px;">
+        ¿No tienes cuenta? 
+        <button type="button" id="toggleFormBtn" onclick="toggleAuthForm()">Regístrate aquí</button>
+      </p>
+    </div>
   </div>
 </div>
 
 <!-- ADMIN SECTION -->
 <div class="admin-container" id="adminSection">
   <div class="admin-header">
-    <h1>🍽️ Ceniza Control de Horas</h1>
+    <h1>🍽️ Ceniza Control de Horas y Reservaciones</h1>
     <div class="user-info">
-      <div id="userEmail"></div>
+      <div id="userEmail" style="font-size:12px; color:var(--cream-dim);"></div>
       <button class="logout-btn" onclick="handleLogout()">Cerrar Sesión</button>
     </div>
   </div>
@@ -452,7 +542,6 @@
   let currentUser = null;
   let fechaActual = new Date().toISOString().split('T')[0];
 
-  // Horarios disponibles (11 AM a 10 PM, cada 30 min)
   const HORAS_DISPONIBLES = [
     '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', 
     '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
@@ -465,7 +554,6 @@
       checkAuth();
       setupAuthListener();
       
-      // Set fecha actual en input
       document.getElementById('fechaControl').value = fechaActual;
       document.getElementById('fechaControl').addEventListener('change', (e) => {
         fechaActual = e.target.value;
@@ -474,6 +562,35 @@
       });
     }
   }, 100);
+
+  // Toggle entre login y registro
+  function toggleAuthForm() {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const toggleText = document.getElementById('toggleText');
+
+    if (loginForm.style.display === 'none') {
+      // Mostrar login
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      toggleText.innerHTML = '¿Tienes cuenta? <button type="button" onclick="toggleAuthForm()">Inicia sesión</button>';
+    } else {
+      // Mostrar registro
+      loginForm.style.display = 'none';
+      registerForm.style.display = 'block';
+      toggleText.innerHTML = '¿No tienes cuenta? <button type="button" onclick="toggleAuthForm()">Regístrate aquí</button>';
+    }
+  }
+
+  // Toggle visibility de contraseña
+  function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+    } else {
+      input.type = 'password';
+    }
+  }
 
   function setupAuthListener() {
     supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -520,9 +637,41 @@
       cargarHoras();
       cargarReservacionesDelDia();
     } catch (error) {
-      showMessage('loginError', '❌ ' + error.message, 'error');
+      showMessage('authMessage', '❌ ' + error.message, 'error');
       loginBtn.disabled = false;
       loginBtn.textContent = 'Ingresar';
+    }
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const registerBtn = document.getElementById('registerBtn');
+
+    registerBtn.disabled = true;
+    registerBtn.textContent = 'Registrando...';
+
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password
+      });
+
+      if (error) throw error;
+      
+      showMessage('authMessage', '✓ Cuenta creada exitosamente. Por favor inicia sesión.', 'success');
+      
+      // Limpiar formulario y mostrar login
+      document.getElementById('registerForm').reset();
+      setTimeout(() => {
+        toggleAuthForm();
+        document.getElementById('loginEmail').value = email;
+      }, 2000);
+    } catch (error) {
+      showMessage('authMessage', '❌ ' + error.message, 'error');
+      registerBtn.disabled = false;
+      registerBtn.textContent = 'Registrarse';
     }
   }
 
@@ -540,14 +689,13 @@
   function showAdminPanel() {
     document.getElementById('authSection').style.display = 'none';
     document.getElementById('adminSection').classList.add('active');
-    document.getElementById('userEmail').textContent = currentUser?.email || '';
+    document.getElementById('userEmail').textContent = '📧 ' + (currentUser?.email || '');
   }
 
   // ====== CONTROL DE HORAS ======
 
   async function cargarHoras() {
     try {
-      // Obtener todas las reservaciones confirmadas del día seleccionado
       const { data: reservaciones, error } = await supabaseClient
         .from('mis_citas')
         .select('hora')
@@ -578,14 +726,13 @@
 
     } catch (error) {
       console.error('Error cargando horas:', error);
-      showMessage('loginError', '❌ Error cargando horas', 'error');
+      showMessage('authMessage', '❌ Error cargando horas', 'error');
     }
   }
 
   async function toggleHora(hora, estaReservada) {
     try {
       if (estaReservada) {
-        // Liberar la hora (eliminar la reservación)
         const { data: reservacion, error: errorData } = await supabaseClient
           .from('mis_citas')
           .select('id')
@@ -594,7 +741,7 @@
           .eq('estado', 'confirmada')
           .single();
 
-        if (errorData) throw errorData;
+        if (errorData && errorData.code !== 'PGRST116') throw errorData;
 
         if (reservacion) {
           const { error: errorDelete } = await supabaseClient
@@ -603,10 +750,9 @@
             .eq('id', reservacion.id);
 
           if (errorDelete) throw errorDelete;
-          showMessage('loginError', `✓ Hora ${hora} liberada`, 'success');
+          showMessage('authMessage', `✓ Hora ${hora} liberada`, 'success');
         }
       } else {
-        // Ocupar la hora (crear reservación temporal)
         const { error } = await supabaseClient
           .from('mis_citas')
           .insert([{
@@ -621,14 +767,14 @@
           }]);
 
         if (error) throw error;
-        showMessage('loginError', `✓ Hora ${hora} marcada como ocupada`, 'success');
+        showMessage('authMessage', `✓ Hora ${hora} marcada como ocupada`, 'success');
       }
 
       cargarHoras();
       cargarReservacionesDelDia();
     } catch (error) {
       console.error('Error:', error);
-      showMessage('loginError', '❌ Error: ' + error.message, 'error');
+      showMessage('authMessage', '❌ Error: ' + error.message, 'error');
     }
   }
 
@@ -679,10 +825,10 @@
 
       if (error) throw error;
 
-      showMessage('loginError', '✓ Marcado como no-show', 'success');
+      showMessage('authMessage', '✓ Marcado como no-show', 'success');
       cargarReservacionesDelDia();
     } catch (error) {
-      showMessage('loginError', '❌ Error: ' + error.message, 'error');
+      showMessage('authMessage', '❌ Error: ' + error.message, 'error');
     }
   }
 
